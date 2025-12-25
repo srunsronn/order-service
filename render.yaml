@@ -28,7 +28,7 @@ services:
           name: order-service-db
           property: database
       - key: INVENTORY_SERVICE_URL
-        value: https://api.soksothy.me/api/v1
+        value: https://devops-api-gateway-production.up.railway.app/api/inventory
 
 databases:
   - name: order-service-db
