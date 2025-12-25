@@ -11,7 +11,7 @@ import { InventoryService } from '../inventory/inventory.service';
   imports: [
     TypeOrmModule.forFeature([Order, OrderItem]),
     HttpModule.register({
-      timeout: 5000,
+      timeout: 10000, // Increased timeout to 10 seconds
       maxRedirects: 5,
     }),
   ],
