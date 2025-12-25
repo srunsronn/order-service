@@ -31,24 +31,21 @@ export class OrdersService {
     // Auto-generate userId for guest checkout if not provided
     const userId = createOrderDto.userId || `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // For production testing, temporarily skip inventory check
-    // TODO: Re-enable inventory validation after fixing API connectivity
-    // const inventoryCheck = await this.inventoryService.checkAvailability({
-    //   items: createOrderDto.items.map((item) => ({
-    //     productId: item.productId,
-    //     quantity: item.quantity,
-    //   })),
-    // });
+    // Check inventory availability before creating order
+    const inventoryCheck = await this.inventoryService.checkAvailability({
+      items: createOrderDto.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })),
+    });
 
-    // if (!inventoryCheck.available) {
-    //   const unavailableProducts = inventoryCheck.unavailableItems?.join(', ') || 'Unknown';
-    //   throw new BadRequestException(
-    //     `Insufficient stock for products: ${unavailableProducts}`,
-    //   );
-    // }
+    if (!inventoryCheck.available) {
+      const unavailableProducts = inventoryCheck.unavailableItems?.join(', ') || 'Unknown';
+      throw new BadRequestException(
+        `Insufficient stock for products: ${unavailableProducts}`,
+      );
+    }
 
-    // Mock inventory check for testing
-    const inventoryCheck = { available: true };
 
     // Calculate total
     const total = createOrderDto.items.reduce(
@@ -126,16 +123,15 @@ export class OrdersService {
     this.logger.log(`Deducting inventory stock for order ${order.id}`);
 
     try {
-      // Deduct stock for each item
+      // Deduct stock for each item using inventory API
       for (const item of order.items) {
-      // For production testing, temporarily skip stock deduction
-      // TODO: Re-enable stock deduction after fixing API connectivity
-      // await this.inventoryService.deductStock(
-      //   item.productId,
-      //   item.quantity,
-      // );
-
-      this.logger.log(`Mock: Stock deduction skipped for order ${order.id}`);
+        await this.inventoryService.deductStock(
+          item.productId,
+          item.quantity,
+        );
+        this.logger.log(
+          `Deducted ${item.quantity} units of ${item.productId}`,
+        );
       }
 
       this.logger.log(`Successfully deducted stock for order ${order.id}`);
