@@ -78,6 +78,39 @@ export class OrdersService {
     return savedOrder;
   }
 
+  async findAll(page: number = 1, limit: number = 10): Promise<{
+    data: Order[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    this.logger.log(`Fetching orders - Page: ${page}, Limit: ${limit}`);
+
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await this.orderRepository.findAndCount({
+      relations: ['items'],
+      order: {
+        createdAt: 'DESC',
+      },
+      skip,
+      take: limit,
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    this.logger.log(`Found ${orders.length} orders out of ${total} total`);
+
+    return {
+      data: orders,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
+  }
+
   async findOne(id: string): Promise<Order> {
     this.logger.log(`Fetching order: ${id}`);
 
