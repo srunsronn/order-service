@@ -1,0 +1,527 @@
+{
+	"info": {
+		"_postman_id": "4f9db6c1-d60d-4a25-b9d4-5460e3405a95",
+		"name": "Inventory Service API v2.0",
+		"description": "Complete API collection for Inventory Service with Product Management, Stock Tracking, Image Upload, and Combined Operations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32081781"
+	},
+	"item": [
+		{
+			"name": "Health & Status",
+			"item": [
+				{
+					"name": "Service Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								""
+							]
+						},
+						"description": "Get service status and version"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check if service is healthy"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product Management",
+			"item": [
+				{
+					"name": "Upload Product Image",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8002/products/upload-image",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products",
+								"upload-image"
+							]
+						},
+						"description": "Upload product image to Digital Ocean Spaces (max 5MB, jpg/png/webp only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"LAPTOP001\",\n  \"name\": \"MacBook Pro 16\\\"\",\n  \"description\": \"High-performance laptop with M2 chip, 16GB RAM, 512GB SSD\",\n  \"price\": 2499.99,\n  \"category\": \"Electronics\",\n  \"image_url\": null\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/products",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products"
+							]
+						},
+						"description": "Create a new product (without inventory)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/products/LAPTOP001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products",
+								"LAPTOP001"
+							]
+						},
+						"description": "Get product details by product_id"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/products",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products"
+							]
+						},
+						"description": "Get all products (without stock information)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"MacBook Pro 16\\\" (Updated)\",\n  \"price\": 2299.99,\n  \"description\": \"Updated description with new features\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/products/LAPTOP001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products",
+								"LAPTOP001"
+							]
+						},
+						"description": "Update product details (all fields optional)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/products/LAPTOP001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products",
+								"LAPTOP001"
+							]
+						},
+						"description": "Delete product (also deletes associated inventory and image from DO Spaces)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inventory Management",
+			"item": [
+				{
+					"name": "Create Stock Entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"LAPTOP001\",\n  \"quantity\": 50\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/inventory",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"inventory"
+							]
+						},
+						"description": "Create inventory entry for a product (product must exist)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stock by Product ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/inventory/LAPTOP001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"inventory",
+								"LAPTOP001"
+							]
+						},
+						"description": "Get stock quantity for a specific product"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Inventory",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/inventory",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"inventory"
+							]
+						},
+						"description": "Get all inventory items"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Stock (Restock)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 30\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/inventory/LAPTOP001/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"inventory",
+								"LAPTOP001",
+								"add"
+							]
+						},
+						"description": "Add stock quantity (restock operation)"
+					},
+					"response": []
+				},
+				{
+					"name": "Deduct Stock (Order)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 5\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/inventory/LAPTOP001/deduct",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"inventory",
+								"LAPTOP001",
+								"deduct"
+							]
+						},
+						"description": "Deduct stock quantity (order operation). Returns error if insufficient stock."
+					},
+					"response": []
+				},
+				{
+					"name": "Check Stock Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/inventory/LAPTOP001/check/25",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"inventory",
+								"LAPTOP001",
+								"check",
+								"25"
+							]
+						},
+						"description": "Check if sufficient stock is available for requested quantity"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Stock Entry",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/inventory/LAPTOP001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"inventory",
+								"LAPTOP001"
+							]
+						},
+						"description": "Delete inventory entry for a product"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Low Stock Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/inventory/low-stock",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"inventory",
+								"low-stock"
+							]
+						},
+						"description": "Get all products with stock quantity less than 10 (includes product details)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Combined Operations",
+			"item": [
+				{
+					"name": "Create Product with Stock",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"MOUSE001\",\n  \"name\": \"Wireless Mouse\",\n  \"description\": \"Ergonomic wireless mouse with USB receiver\",\n  \"price\": 29.99,\n  \"category\": \"Accessories\",\n  \"image_url\": null,\n  \"initial_quantity\": 200\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/products-with-stock",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products-with-stock"
+							]
+						},
+						"description": "Create product WITH initial stock in one operation"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product with Stock",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/products-with-stock/MOUSE001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products-with-stock",
+								"MOUSE001"
+							]
+						},
+						"description": "Get product details WITH current stock quantity in one call"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Products with Stock",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/products-with-stock",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products-with-stock"
+							]
+						},
+						"description": "Get all products WITH their stock levels"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product and Stock",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Wireless Mouse Pro\",\n  \"price\": 39.99,\n  \"quantity\": 150\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/products-with-stock/MOUSE001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8002",
+							"path": [
+								"products-with-stock",
+								"MOUSE001"
+							]
+						},
+						"description": "Update product details AND stock quantity together (all fields optional)"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8002",
+			"type": "string"
+		}
+	]
+}
