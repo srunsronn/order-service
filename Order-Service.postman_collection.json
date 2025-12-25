@@ -1,0 +1,241 @@
+{
+  "info": {
+    "name": "Order Service - Production API",
+    "description": "Complete API collection for Order Service deployed on Render",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "https://order-service-dm41.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "ORDER_ID",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/health",
+          "host": ["{{BASE_URL}}"],
+          "path": ["health"]
+        },
+        "description": "Check if the service is running"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.collectionVariables.set('ORDER_ID', jsonData.id);",
+              "    pm.environment.set('ORDER_ID', jsonData.id);",
+              "    console.log('Order ID saved: ' + jsonData.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"user123\",\n  \"items\": [\n    {\n      \"productId\": \"LAPTOP001\",\n      \"quantity\": 2,\n      \"price\": 999.99\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Create a new order with inventory validation"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Order - Multiple Items",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.collectionVariables.set('ORDER_ID', jsonData.id);",
+              "    console.log('Order ID saved: ' + jsonData.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"user456\",\n  \"items\": [\n    {\n      \"productId\": \"LAPTOP001\",\n      \"quantity\": 1,\n      \"price\": 999.99\n    },\n    {\n      \"productId\": \"MOUSE001\",\n      \"quantity\": 2,\n      \"price\": 29.99\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Create order with multiple items"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Order by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders/{{ORDER_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders", "{{ORDER_ID}}"]
+        },
+        "description": "Retrieve order details by ID"
+      },
+      "response": []
+    },
+    {
+      "name": "Confirm Order",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders/{{ORDER_ID}}/status",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders", "{{ORDER_ID}}", "status"]
+        },
+        "description": "Confirm order - this will deduct stock from inventory"
+      },
+      "response": []
+    },
+    {
+      "name": "Complete Order",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"COMPLETED\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders/{{ORDER_ID}}/status",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders", "{{ORDER_ID}}", "status"]
+        },
+        "description": "Mark order as completed"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Order - Insufficient Stock (Error Case)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"user789\",\n  \"items\": [\n    {\n      \"productId\": \"LAPTOP001\",\n      \"quantity\": 1000,\n      \"price\": 999.99\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Test error handling for insufficient stock"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Order - Invalid Product (Error Case)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"user789\",\n  \"items\": [\n    {\n      \"productId\": \"INVALID_PRODUCT\",\n      \"quantity\": 1,\n      \"price\": 999.99\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Test error handling for invalid product"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Order - Missing Fields (Error Case)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"LAPTOP001\",\n      \"quantity\": 1,\n      \"price\": 999.99\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Test validation error for missing userId"
+      },
+      "response": []
+    }
+  ]
+}

@@ -24,8 +24,8 @@ export class InventoryService {
 
   /**
    * Check availability for multiple items
-   * Calls the inventory service for each item individually
-   * GET /inventory/{productId}/check/{quantity}
+   * Calls the bulk check-availability endpoint
+   * POST /inventory/check-availability/bulk
    */
   async checkAvailability(
     request: InventoryCheckRequest,
@@ -33,31 +33,28 @@ export class InventoryService {
     try {
       this.logger.log(`Checking inventory for ${request.items.length} items`);
 
-      const unavailableItems: string[] = [];
+      // Use bulk check-availability endpoint
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.inventoryUrl}/inventory/check-availability/bulk`,
+          {
+            items: request.items.map(item => ({
+              product_id: item.productId,
+              required_quantity: item.quantity,
+            })),
+          },
+        ),
+      );
 
-      // Check each item individually
-      for (const item of request.items) {
-        const isAvailable = await this.checkSingleItem(
-          item.productId,
-          item.quantity,
-        );
+      const { all_available, items } = response.data;
 
-        if (!isAvailable) {
-          unavailableItems.push(item.productId);
-        }
-      }
-
-      const allAvailable = unavailableItems.length === 0;
-
-      if (!allAvailable) {
-        this.logger.warn(
-          `Items not available: ${unavailableItems.join(', ')}`,
-        );
-      }
+      const unavailableItems = items
+        .filter(item => !item.available)
+        .map(item => item.product_id);
 
       return {
-        available: allAvailable,
-        unavailableItems: allAvailable ? undefined : unavailableItems,
+        available: all_available,
+        unavailableItems: all_available ? undefined : unavailableItems,
       };
     } catch (error) {
       this.logger.error(
@@ -73,33 +70,8 @@ export class InventoryService {
   }
 
   /**
-   * Check stock availability for a single product
-   * GET /inventory/{productId}/check/{quantity}
-   */
-  private async checkSingleItem(
-    productId: string,
-    quantity: number,
-  ): Promise<boolean> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get<SingleStockCheckResponse>(
-          `${this.inventoryUrl}/inventory/${productId}/check/${quantity}`,
-        ),
-      );
-
-      return response.data.available;  // Changed from is_available to available
-    } catch (error) {
-      this.logger.error(
-        `Failed to check stock for product ${productId}: ${error.message}`,
-      );
-      // If product doesn't exist or service fails, consider it unavailable
-      return false;
-    }
-  }
-
-  /**
    * Deduct stock for a single product
-   * PUT /inventory/{productId}/deduct
+   * POST /inventory/items/{productId}/adjust
    * This should be called after order is confirmed
    */
   async deductStock(
@@ -112,9 +84,12 @@ export class InventoryService {
       );
 
       const response = await firstValueFrom(
-        this.httpService.put<StockDeductResponse>(
-          `${this.inventoryUrl}/inventory/${productId}/deduct`,
-          { quantity } as StockDeductRequest,
+        this.httpService.post<StockDeductResponse>(
+          `${this.inventoryUrl}/inventory/items/${productId}/adjust`,
+          { 
+            quantity: -quantity,  // Negative quantity to deduct
+            reason: `Order placement - deducted ${quantity} units`
+          },
         ),
       );
 

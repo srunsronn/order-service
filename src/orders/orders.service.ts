@@ -26,7 +26,10 @@ export class OrdersService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    this.logger.log(`Creating order for user: ${createOrderDto.userId}`);
+    this.logger.log(`Creating order for user: ${createOrderDto.userId || 'guest'}`);
+
+    // Auto-generate userId for guest checkout if not provided
+    const userId = createOrderDto.userId || `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Check inventory availability
     const inventoryCheck = await this.inventoryService.checkAvailability({
@@ -49,9 +52,14 @@ export class OrdersService {
       0,
     );
 
-    // Create order with items
+    // Create order with items and customer information
     const order = this.orderRepository.create({
-      userId: createOrderDto.userId,
+      userId,
+      fullName: createOrderDto.fullName,
+      email: createOrderDto.email,
+      address: createOrderDto.address,
+      city: createOrderDto.city,
+      zipCode: createOrderDto.zipCode,
       status: OrderStatus.PENDING,
       total,
       items: createOrderDto.items.map((item) =>

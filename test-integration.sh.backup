@@ -65,6 +65,7 @@ echo "Creating order with product: ${PRODUCT_ID}"
 CREATE_ORDER_RESPONSE=$(curl -s -X POST "${ORDER_URL}/api/orders" \
   -H "Content-Type: application/json" \
   -d "{
+    \"userId\": \"test-user-$(date +%s)\",
     \"fullName\": \"Test Customer\",
     \"email\": \"test@example.com\",
     \"address\": \"123 Test Street\",
@@ -116,7 +117,7 @@ if echo "$CONFIRM_ORDER" | grep -q "CONFIRMED"; then
     echo -e "${GREEN}✓ Order confirmed and stock deducted${NC}"
 else
     echo -e "${RED}✗ Failed to confirm order${NC}"
-fi
+fiitems/
 echo ""
 
 echo -e "${YELLOW}Step 8: Verify Stock Deduction${NC}"

@@ -16,6 +16,21 @@ export class Order {
   @Column()
   userId: string;
 
+  @Column({ nullable: true })
+  fullName: string;
+
+  @Column({ nullable: true })
+  email: string;
+
+  @Column({ nullable: true })
+  address: string;
+
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  zipCode: string;
+
   @Column({
     type: 'enum',
     enum: OrderStatus,

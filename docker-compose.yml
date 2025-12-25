@@ -15,7 +15,7 @@ services:
       DATABASE_USERNAME: srorn
       DATABASE_PASSWORD: bert050904
       DATABASE_NAME: order_service
-      INVENTORY_SERVICE_URL: http://inventory-service:3001
+      INVENTORY_SERVICE_URL: https://api.soksothy.me/api/v1
     depends_on:
       - postgres
     networks:

@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: order-service
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: order-service-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: order-service-db
+          property: port
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: order-service-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: order-service-db
+          property: password
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: order-service-db
+          property: database
+      - key: INVENTORY_SERVICE_URL
+        value: https://api.soksothy.me/api/v1
+
+databases:
+  - name: order-service-db
+    databaseName: order_service
+    user: order_service_user

@@ -9,6 +9,6 @@ export default () => ({
     database: process.env.DATABASE_NAME || 'order_service',
   },
   services: {
-    inventoryUrl: process.env.INVENTORY_SERVICE_URL || 'http://localhost:3001',
+    inventoryUrl: process.env.INVENTORY_SERVICE_URL || 'https://api.soksothy.me/api/v1',
   },
 });
