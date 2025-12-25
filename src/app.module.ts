@@ -23,7 +23,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
         password: configService.get('database.password'),
         database: configService.get('database.database'),
         entities: [Order, OrderItem],
-        synchronize: true, // Enable to update production database schema
+        synchronize: false, // Disabled after schema update - use migrations for future changes
         logging: configService.get('nodeEnv') === 'development',
       }),
       inject: [ConfigService],
