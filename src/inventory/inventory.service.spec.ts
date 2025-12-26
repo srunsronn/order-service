@@ -13,6 +13,7 @@ describe('InventoryService', () => {
 
   const mockHttpService = {
     post: jest.fn(),
+    get: jest.fn(),
   };
 
   const mockConfigService = {
@@ -53,23 +54,16 @@ describe('InventoryService', () => {
 
   describe('checkAvailability', () => {
     it('should check availability for multiple items successfully', async () => {
-      const mockResponse: AxiosResponse = {
+      const mockResponse1: AxiosResponse = {
         data: {
-          all_available: true,
-          items: [
-            {
-              product_id: 'PROD-001',
-              available: true,
-              current_quantity: 100,
-              required_quantity: 5,
-            },
-            {
-              product_id: 'PROD-002',
-              available: true,
-              current_quantity: 50,
-              required_quantity: 2,
-            },
-          ],
+          id: 1,
+          name: 'Product 1',
+          sku: 'PROD-001',
+          price: '10.00',
+          stock: 100,
+          image: '',
+          created_at: '2025-01-01T00:00:00.000000Z',
+          updated_at: '2025-01-01T00:00:00.000000Z',
         },
         status: 200,
         statusText: 'OK',
@@ -77,46 +71,55 @@ describe('InventoryService', () => {
         config: {} as any,
       };
 
-      mockHttpService.post.mockReturnValue(of(mockResponse));
+      const mockResponse2: AxiosResponse = {
+        data: {
+          id: 2,
+          name: 'Product 2',
+          sku: 'PROD-002',
+          price: '20.00',
+          stock: 50,
+          image: '',
+          created_at: '2025-01-01T00:00:00.000000Z',
+          updated_at: '2025-01-01T00:00:00.000000Z',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      };
+
+      mockHttpService.get
+        .mockReturnValueOnce(of(mockResponse1))
+        .mockReturnValueOnce(of(mockResponse2));
 
       const result = await service.checkAvailability({
         items: [
-          { productId: 'PROD-001', quantity: 5 },
-          { productId: 'PROD-002', quantity: 2 },
+          { productId: '1', quantity: 5 },
+          { productId: '2', quantity: 2 },
         ],
       });
 
       expect(result.available).toBe(true);
       expect(result.unavailableItems).toBeUndefined();
-      expect(httpService.post).toHaveBeenCalledWith(
-        expect.stringContaining('check-availability/bulk'),
-        {
-          items: [
-            { product_id: 'PROD-001', required_quantity: 5 },
-            { product_id: 'PROD-002', required_quantity: 2 },
-          ],
-        },
+      expect(httpService.get).toHaveBeenCalledWith(
+        'https://devops-api-gateway-production.up.railway.app/api/products/1',
+      );
+      expect(httpService.get).toHaveBeenCalledWith(
+        'https://devops-api-gateway-production.up.railway.app/api/products/2',
       );
     });
 
     it('should return unavailable items when stock is insufficient', async () => {
-      const mockResponse: AxiosResponse = {
+      const mockResponse1: AxiosResponse = {
         data: {
-          all_available: false,
-          items: [
-            {
-              product_id: 'PROD-001',
-              available: true,
-              current_quantity: 100,
-              required_quantity: 5,
-            },
-            {
-              product_id: 'PROD-002',
-              available: false,
-              current_quantity: 1,
-              required_quantity: 10,
-            },
-          ],
+          id: 1,
+          name: 'Product 1',
+          sku: 'PROD-001',
+          price: '10.00',
+          stock: 100,
+          image: '',
+          created_at: '2025-01-01T00:00:00.000000Z',
+          updated_at: '2025-01-01T00:00:00.000000Z',
         },
         status: 200,
         statusText: 'OK',
@@ -124,30 +127,50 @@ describe('InventoryService', () => {
         config: {} as any,
       };
 
-      mockHttpService.post.mockReturnValue(of(mockResponse));
+      const mockResponse2: AxiosResponse = {
+        data: {
+          id: 2,
+          name: 'Product 2',
+          sku: 'PROD-002',
+          price: '20.00',
+          stock: 1,
+          image: '',
+          created_at: '2025-01-01T00:00:00.000000Z',
+          updated_at: '2025-01-01T00:00:00.000000Z',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      };
+
+      mockHttpService.get
+        .mockReturnValueOnce(of(mockResponse1))
+        .mockReturnValueOnce(of(mockResponse2));
 
       const result = await service.checkAvailability({
         items: [
-          { productId: 'PROD-001', quantity: 5 },
-          { productId: 'PROD-002', quantity: 10 },
+          { productId: '1', quantity: 5 },
+          { productId: '2', quantity: 10 },
         ],
       });
 
       expect(result.available).toBe(false);
-      expect(result.unavailableItems).toContain('PROD-002');
-      expect(result.unavailableItems).not.toContain('PROD-001');
+      expect(result.unavailableItems).toContain('2');
+      expect(result.unavailableItems).not.toContain('1');
     });
 
-    it('should throw HttpException when API call fails', async () => {
-      mockHttpService.post.mockReturnValue(
+    it('should mark items as unavailable when API call fails', async () => {
+      mockHttpService.get.mockReturnValue(
         throwError(() => new Error('Network error')),
       );
 
-      await expect(
-        service.checkAvailability({
-          items: [{ productId: 'PROD-001', quantity: 5 }],
-        }),
-      ).rejects.toThrow(HttpException);
+      const result = await service.checkAvailability({
+        items: [{ productId: '1', quantity: 5 }],
+      });
+
+      expect(result.available).toBe(false);
+      expect(result.unavailableItems).toContain('1');
     });
   });
 
@@ -155,9 +178,14 @@ describe('InventoryService', () => {
     it('should deduct stock successfully', async () => {
       const mockResponse: AxiosResponse = {
         data: {
-          product_id: 'PROD-001',
-          new_quantity: 95,
-          message: 'Stock deducted successfully',
+          id: 1,
+          name: 'Product 1',
+          sku: 'PROD-001',
+          price: '10.00',
+          stock: 100,
+          image: '',
+          created_at: '2025-01-01T00:00:00.000000Z',
+          updated_at: '2025-01-01T00:00:00.000000Z',
         },
         status: 200,
         statusText: 'OK',
@@ -165,27 +193,28 @@ describe('InventoryService', () => {
         config: {} as any,
       };
 
-      mockHttpService.post.mockReturnValue(of(mockResponse));
+      mockHttpService.get.mockReturnValue(of(mockResponse));
 
-      const result = await service.deductStock('PROD-001', 5);
+      const result = await service.deductStock('1', 5);
 
-      expect(result.product_id).toBe('PROD-001');
+      expect(result.product_id).toBe('1');
       expect(result.new_quantity).toBe(95);
-      expect(httpService.post).toHaveBeenCalledWith(
-        expect.stringContaining('PROD-001/remove'),
-        {
-          quantity: 5,
-          reason: 'Order placement - deducted 5 units',
-        },
+      expect(httpService.get).toHaveBeenCalledWith(
+        'https://devops-api-gateway-production.up.railway.app/api/products/1',
       );
     });
 
     it('should use positive quantity for removal', async () => {
       const mockResponse: AxiosResponse = {
         data: {
-          product_id: 'PROD-001',
-          new_quantity: 97,
-          message: 'Stock deducted',
+          id: 1,
+          name: 'Product 1',
+          sku: 'PROD-001',
+          price: '10.00',
+          stock: 100,
+          image: '',
+          created_at: '2025-01-01T00:00:00.000000Z',
+          updated_at: '2025-01-01T00:00:00.000000Z',
         },
         status: 200,
         statusText: 'OK',
@@ -193,24 +222,21 @@ describe('InventoryService', () => {
         config: {} as any,
       };
 
-      mockHttpService.post.mockReturnValue(of(mockResponse));
+      mockHttpService.get.mockReturnValue(of(mockResponse));
 
-      await service.deductStock('PROD-001', 3);
+      await service.deductStock('1', 3);
 
-      expect(httpService.post).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          quantity: 3,
-        }),
+      expect(httpService.get).toHaveBeenCalledWith(
+        'https://devops-api-gateway-production.up.railway.app/api/products/1',
       );
     });
 
     it('should throw HttpException when deduction fails', async () => {
-      mockHttpService.post.mockReturnValue(
+      mockHttpService.get.mockReturnValue(
         throwError(() => new Error('Insufficient stock')),
       );
 
-      await expect(service.deductStock('PROD-001', 1000)).rejects.toThrow(
+      await expect(service.deductStock('1', 1000)).rejects.toThrow(
         HttpException,
       );
     });
