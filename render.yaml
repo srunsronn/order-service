@@ -28,7 +28,7 @@ services:
           name: order-service-db
           property: database
       - key: INVENTORY_SERVICE_URL
-        value: https://devops-api-gateway-production.up.railway.app/api/inventory
+        value: https://devops-api-gateway-production.up.railway.app/api
 
 databases:
   - name: order-service-db
