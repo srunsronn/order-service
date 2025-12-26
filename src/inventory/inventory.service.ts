@@ -24,8 +24,8 @@ export class InventoryService {
 
   /**
    * Check availability for multiple items
-   * Calls the bulk check-availability endpoint
-   * POST /inventory/check-availability/bulk
+   * Calls the bulk check-availability endpoint via API Gateway
+   * POST /stock/check-availability/bulk
    */
   async checkAvailability(
     request: InventoryCheckRequest,
@@ -33,10 +33,10 @@ export class InventoryService {
     try {
       this.logger.log(`Checking inventory for ${request.items.length} items`);
 
-      // Use bulk check-availability endpoint
+      // Use API Gateway bulk check-availability endpoint
       const response = await firstValueFrom(
         this.httpService.post(
-          `${this.inventoryUrl}/inventory/check-availability/bulk`,
+          `${this.inventoryUrl}/stock/check-availability/bulk`,
           {
             items: request.items.map(item => ({
               product_id: item.productId,
@@ -70,8 +70,8 @@ export class InventoryService {
   }
 
   /**
-   * Deduct stock for a single product
-   * POST /inventory/items/{productId}/adjust
+   * Deduct stock for a single product via API Gateway
+   * POST /stock/{productId}/remove
    * This should be called after order is confirmed
    */
   async deductStock(
@@ -85,9 +85,9 @@ export class InventoryService {
 
       const response = await firstValueFrom(
         this.httpService.post<StockDeductResponse>(
-          `${this.inventoryUrl}/inventory/items/${productId}/adjust`,
+          `${this.inventoryUrl}/stock/${productId}/remove`,
           { 
-            quantity: -quantity,  // Negative quantity to deduct
+            quantity: quantity,  // Positive quantity (API Gateway handles as removal)
             reason: `Order placement - deducted ${quantity} units`
           },
         ),

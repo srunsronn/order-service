@@ -9,6 +9,6 @@ export default () => ({
     database: process.env.DATABASE_NAME || 'order_service',
   },
   services: {
-    inventoryUrl: process.env.INVENTORY_SERVICE_URL || 'https://devops-api-gateway-production.up.railway.app/api/inventory',
+    inventoryUrl: process.env.INVENTORY_SERVICE_URL || 'https://devops-api-gateway-production.up.railway.app/api',
   },
 });

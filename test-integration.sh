@@ -13,7 +13,7 @@ echo -e "${BLUE}======================================${NC}"
 echo ""
 
 # Configuration
-INVENTORY_URL="https://api.soksothy.me/api/v1"
+INVENTORY_URL="https://devops-api-gateway-production.up.railway.app/api/inventory"
 ORDER_URL="http://localhost:3000"
 
 echo -e "${YELLOW}Step 1: Testing Inventory Service Connection${NC}"
@@ -29,8 +29,8 @@ fi
 echo ""
 
 echo -e "${YELLOW}Step 2: Get Available Products from Inventory${NC}"
-echo "Testing: GET ${INVENTORY_URL}/inventory/items"
-PRODUCTS=$(curl -s "${INVENTORY_URL}/inventory/items")
+echo "Testing: GET ${INVENTORY_URL}"
+PRODUCTS=$(curl -s "${INVENTORY_URL}")
 echo "Available products:"
 echo "$PRODUCTS" | jq '.data[0:3]' 2>/dev/null || echo "$PRODUCTS"
 echo ""
